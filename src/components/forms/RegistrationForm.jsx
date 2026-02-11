@@ -1,15 +1,20 @@
 import React from "react";
 import FieldSet from "../FieldSet";
 import Field from "../Field";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import NumberInput from "../NumberInput";
 
 const RegistrationForm = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm();
-  const {fields, append, remove} = useFieldArray()
+  const { fields, append, remove } = useFieldArray({
+    name: "socials",
+    control,
+  });
   const submitData = (formData) => {
     console.log(formData);
   };
@@ -59,22 +64,88 @@ const RegistrationForm = () => {
               placeholder="Enter a Full Name"
             />
           </Field>
-            {/* Age */}
+          {/* Age */}
           <Field label="Age" error={errors.age}>
-            <input
-              {...register("age", { required: "Age is Required", 
-                max:{
-                    value:100,
-                    message: "Age Must be between 0 and 100"
-                }
-               })}
-              className={` border  py-1 px-2 ${errors.age ? "border-red-500" : "border-gray-300"}`}
-              type="number"
+            <Controller
               name="age"
-              id="age"
-              placeholder="Enter a Age"
+              control={control}
+              render={({ field: { ...fields } }) => (
+                <NumberInput
+                  id="age"
+                  className={` border  py-1 px-2 ${errors.age ? "border-red-500" : "border-gray-300"}`}
+                  {...fields}
+                />
+              )}
+              rules={{
+                max: {
+                  value: 100,
+                  message: "Age can be between 0 and 100",
+                },
+              }}
             />
           </Field>
+
+          {/* Picture */}
+          <Field label="Add Picture" error={errors.picture}>
+            <input
+              {...register("picture", {
+                required: "Picture is Required",
+                minLength: {
+                  value: 8,
+                  message: "Picture at least 3 MB",
+                },
+              })}
+              className={` border  py-1 px-2 ${errors.picture ? "border-red-500" : "border-gray-300"}`}
+              type="file"
+              name="picture"
+              id="picture"
+            />
+          </Field>
+
+          {/*Social link */}
+          <FieldSet label="Enter Social Handel">
+            {fields.map((field, index) => {
+              return (
+                <div
+                  className="flex justify-between items-center w-max gap-1"
+                  key={field.id}
+                >
+                  <Field label="Social Name">
+                    <input
+                      {...register(`Social [${index}].name`)}
+                      className={`w-[300px] border  py-1 px-2 ${errors.email ? "border-red-500" : "border-gray-300"}`}
+                      type="text"
+                      name={`Social[${index}].name`}
+                      id={`Social[${index}].name`}
+                    />
+                  </Field>
+
+                  <Field label="Social URL">
+                    <input
+                      {...register(`Social [${index}].url`)}
+                      className={`w-[300px] border  py-1 px-2 ${errors.email ? "border-red-500" : "border-gray-300"}`}
+                      type="text"
+                      name={`Social[${index}].url`}
+                      id={`Social[${index}].url`}
+                    />
+                  </Field>
+                  <button
+                    onClick={() => remove(index)}
+                    className="bg-red-500 px-4 mt-8 rounded cursor-pointer "
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })}
+            <button
+              onClick={() => append({ name: "", url: "" })}
+              type="button"
+              className="bg-green-500 p-2 rounded cursor-pointer"
+            >
+              Add Social Link
+            </button>
+          </FieldSet>
           {/*Button*/}
           <Field>
             <button
